@@ -1,13 +1,45 @@
-import express from "express"
+const express = require("express");
+const cors = require("cors");
+const {MongoClient} = require("mongodb");
+
 
 const app = express();
+const port = 3006;
+app.use(express.json());
+app.use(cors());
 
-const port = 9000;
+const url = "mongodb://localhost:27017";
+const dbName = "quotes";
+const collectionName = "randomQuotes";
+const randomQuote = require("./data/randomQuote");
 
-app.use("/",(req,resp)=>{
-    resp.json({message: "Hello from express app"});
+app.get('/' , async (req , resp)=>{
+    resp.send("Hello world");
+    let quoteTexts = await randomQuote.find();
+    resp.send({"quote":quoteTexts});
 });
 
-app.listen(port ,(req , resp)=>{
-    console.log(`your app is running on server ${port}`);
-});
+app.get("/home", async (req, resp) => {
+    try {
+      const client = new MongoClient(url, { useUnifiedTopology: true });
+      await client.connect();
+  
+      const db = client.db(dbName);
+      const collection = db.collection(collectionName);
+  
+      const count = await collection.countDocuments();
+      const randomNum = Math.floor(Math.random() * count);
+  
+      const quoteItem = await collection.findOne({}, { skip: randomNum });
+  
+      client.close();
+  
+      resp.send(quoteItem);
+    } catch (err) {
+      console.error(err);
+      resp.status(500).send("Error retrieving data");
+    }
+  });
+app.listen(port , ()=>{
+    console.log(`Server is running on ${port}`);
+})
