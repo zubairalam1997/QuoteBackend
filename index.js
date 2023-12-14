@@ -4,14 +4,14 @@ const {MongoClient} = require("mongodb");
 
 
 const app = express();
-const port = 3006;
+const port = 4000;
 app.use(express.json());
 app.use(cors());
 
 const url = "mongodb://localhost:27017";
 const dbName = "quotes";
 const collectionName = "randomQuotes";
-const randomQuote = require("./data/randomQuote");
+const randomQuote = require("./db/randomQuote");
 
 app.get('/' , async (req , resp)=>{
     resp.send("Hello world");
